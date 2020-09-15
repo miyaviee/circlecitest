@@ -1,0 +1,42 @@
+version: 2.1
+defaults: &defaults
+  working_directory: ~/repo
+  environment:
+    - GOCACHE: "/tmp/go/cache"
+    - GOFLAGS: "-mod=readonly"
+
+executors:
+  default:
+    <<: *defaults
+    docker:
+      - image: circleci/golang:1.14.4
+
+jobs:
+  test:
+    executor: default
+    steps:
+      - run: mkdir -p hoge && echo 'test' > hoge/test
+      - persist_to_workspace:
+          root: .
+          paths:
+            - hoge/test
+
+  build_and_deploy:
+    executor: default
+    steps:
+      - run: mkdir -p fuga && echo 'test' > fuga/test
+      - attach_workspace:
+          at: .
+      - run: ls
+
+workflows:
+  version: 2.1
+  all:
+    jobs:
+      - build_and_deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - master
